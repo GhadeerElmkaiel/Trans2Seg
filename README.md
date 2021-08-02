@@ -39,6 +39,9 @@ Download Dataset: [Baidu Drive](https://pan.baidu.com/s/1P-2l-Q2brbnwRd2kXi--Dg)
 ## Instructions for Sberbank robotics lab:
 Please se the [how_to_use](how_to_use.md) file for detailed instructions about training on new dataset and applying inference. 
 
+A discription for the usage of each folder can be found in this [file](What_is_each_folder.md)
+## Evaluation
+
 ## Network Define
 The code of Network pipeline is in `segmentron/models/trans2seg.py`.
 
