@@ -42,7 +42,7 @@ def demo():
 
     default_setup(args)
 
-    # output folder
+    # create output folders
     output_dir = os.path.join(cfg.VISUAL.OUTPUT_DIR, 'vis_result_{}_{}_{}_{}'.format(
         cfg.MODEL.MODEL_NAME, cfg.MODEL.BACKBONE, cfg.DATASET.NAME, cfg.TIME_STAMP))
     if not os.path.exists(output_dir):
@@ -65,6 +65,7 @@ def demo():
         transforms.Normalize(cfg.DATASET.MEAN, cfg.DATASET.STD),
     ])
 
+    # create the model using the configuration
     model = get_segmentation_model().to(args.device)
     model.eval()
 
@@ -83,6 +84,7 @@ def demo():
     print("Dataset Name: ", cfg.DATASET.NAME)
     for img_path in img_paths:
         image = Image.open(img_path).convert('RGB')
+        # getting the flipped image 
         flipped_image = Image.open(img_path).convert('RGB')
         size_ = image.size
 
@@ -94,9 +96,8 @@ def demo():
         # images = transform(image).unsqueeze(0).to(args.device)
         image = transform(image).unsqueeze(0).to(args.device)
 
-        # start_time = time.time()
+        # merging the two images in one batch
         images = torch.cat((image, flipped_image), 0)
-        # print("Base Size: "+str(cfg.TRAIN.BASE_SIZE))
         with torch.no_grad():
             output = model(images)
             
@@ -112,6 +113,7 @@ def demo():
         mask_f = mask_f.resize(size_)
         mask_f = mask_f.transpose(method = Image.FLIP_LEFT_RIGHT)
 
+        # get the result of cropped images (in this case no cropping just flipping) 
         cropping_results = [np.array(mask), np.array(mask_f)]
         cropping_edges = [[0, 0, size_[0], size_[1]], [0, 0, size_[0], size_[1]]]
 
