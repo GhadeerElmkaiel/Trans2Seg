@@ -36,6 +36,9 @@ Trans10K_v2
 ```
 Download Dataset: [Baidu Drive](https://pan.baidu.com/s/1P-2l-Q2brbnwRd2kXi--Dg). code: oqms
 
+## Instructions for Sberbank robotics lab:
+Please se the [how_to_use](how_to_use.md) file for detailed instructions about training on new dataset and applying inference. 
+
 ## Network Define
 The code of Network pipeline is in `segmentron/models/trans2seg.py`.
 
