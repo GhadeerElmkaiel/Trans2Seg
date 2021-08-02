@@ -111,7 +111,7 @@ cfg.TEST.FLIP = False
 
 ########################## visual config ###########################################
 # visual result output dir
-cfg.VISUAL.OUTPUT_DIR = '../runs/visual/'
+cfg.VISUAL.OUTPUT_DIR = './runs/visual/'
 
 ########################## model #######################################
 # model name

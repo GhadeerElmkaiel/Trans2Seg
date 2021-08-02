@@ -50,7 +50,7 @@ bash tools/dist_train.sh $CONFIG-FILE $GPUS
 
 For example:
 ```
-bash tools/dist_train.sh configs/trans10kv2/trans2seg/trans2seg_medium.yaml 8
+bash tools/dist_train.sh configs/trans10kv2/trans2seg/trans2seg_medium.yaml
 ```
 
 ## Test

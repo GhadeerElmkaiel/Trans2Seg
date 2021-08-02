@@ -7,10 +7,19 @@ from IPython import embed
 import math
 import torch.nn.functional as F
 
+########################### my code ###########################
+from torch import Tensor
+
+class GELU(nn.Module):
+    def forward(self, input: Tensor) -> Tensor:
+        return F.gelu(input)
+###############################################################
+
 
 class Mlp(nn.Module):
     #two mlp, fc-relu-drop-fc-relu-drop
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+    # def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=GELU, drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -100,8 +109,10 @@ class Attention_Decoder(nn.Module):
 
 class Block_Encoder(nn.Module):
 
+    # def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+    #              drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+                 drop_path=0., act_layer=GELU, norm_layer=nn.LayerNorm):
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = Attention_Encoder(
@@ -119,8 +130,10 @@ class Block_Encoder(nn.Module):
 
 class Block_Decoder(nn.Module):
 
+    # def __init__(self, dim, num_heads, feat_HxW, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0.,
+    #              attn_drop=0., drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
     def __init__(self, dim, num_heads, feat_HxW, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0.,
-                 attn_drop=0., drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+                 attn_drop=0., drop_path=0., act_layer=GELU, norm_layer=nn.LayerNorm):
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.norm1_clsembed = norm_layer(dim)

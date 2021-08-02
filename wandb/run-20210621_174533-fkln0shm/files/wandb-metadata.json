@@ -1,0 +1,28 @@
+{
+    "os": "Linux-5.8.0-55-generic-x86_64-with-debian-bullseye-sid",
+    "python": "3.7.10",
+    "heartbeatAt": "2021-06-21T14:45:35.072206",
+    "startedAt": "2021-06-21T14:45:33.079616",
+    "docker": null,
+    "gpu": "GeForce GTX 1080 Ti",
+    "gpu_count": 2,
+    "cpu_count": 20,
+    "cuda": null,
+    "args": [
+        "--local_rank=0",
+        "--config-file",
+        "configs/trans10kv2/trans2seg/trans2seg_medium_all_sber_merged.yaml"
+    ],
+    "state": "running",
+    "program": "tools/train.py",
+    "codePath": "tools/train.py",
+    "git": {
+        "remote": "https://github.com/xieenze/Trans2Seg.git",
+        "commit": "93132d1f2d1d7fffe7f44e248e14b56fa0c8e5d1"
+    },
+    "email": "ghadeer.elmkaiel@gmail.com",
+    "root": "/home/ghadeer/Projects/Trans2Seg",
+    "host": "SberLab",
+    "username": "ghadeer",
+    "executable": "/home/ghadeer/anaconda3/envs/Trans2Seg/bin/python"
+}

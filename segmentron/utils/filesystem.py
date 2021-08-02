@@ -7,7 +7,7 @@ import logging
 
 from ..config import cfg
 
-def save_checkpoint(model, epoch, optimizer=None, lr_scheduler=None, is_best=False):
+def save_checkpoint(model, epoch, optimizer=None, lr_scheduler=None, is_best=False, keep=[]):
     """Save Checkpoint"""
     directory = os.path.expanduser(cfg.TRAIN.MODEL_SAVE_DIR)
     # directory = os.path.join(directory, '{}_{}_{}_{}'.format(cfg.MODEL.MODEL_NAME, cfg.MODEL.BACKBONE,
@@ -35,11 +35,12 @@ def save_checkpoint(model, epoch, optimizer=None, lr_scheduler=None, is_best=Fal
         # remove last epoch
         pre_filename = '{}.pth'.format(str(epoch - 1))
         pre_filename = os.path.join(directory, pre_filename)
-        try:
-            if os.path.exists(pre_filename):
-                os.remove(pre_filename)
-        except OSError as e:
-            logging.info(e)
+        if epoch - 1 not in keep:
+            try:
+                if os.path.exists(pre_filename):
+                    os.remove(pre_filename)
+            except OSError as e:
+                logging.info(e)
 
 def makedirs(path):
     """Create directory recursively if not exists.

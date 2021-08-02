@@ -25,6 +25,8 @@ def parse_args():
     # for visual
     parser.add_argument('--input-img', type=str, default='tools/demo_vis.png',
                         help='path to the input image or a directory of images')
+    parser.add_argument('--model-path', type=str, default='workdirs/translab_bs4/50.pth',
+                        help='path to the pretrained model')
     # config options
     parser.add_argument('opts', help='See config for all options',
                         default=None, nargs=argparse.REMAINDER)

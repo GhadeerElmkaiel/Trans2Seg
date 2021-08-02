@@ -3,6 +3,7 @@ import copy
 import datetime
 import os
 import sys
+import numpy as np
 
 cur_path = os.path.abspath(os.path.dirname(__file__))
 root_path = os.path.split(cur_path)[0]
@@ -30,6 +31,9 @@ from segmentron.config import cfg
 from tabulate import tabulate
 from IPython import embed
 from PIL import Image
+
+import wandb
+
 try:
     import apex
 except:
@@ -55,6 +59,7 @@ class Trainer(object):
                        'base_size': cfg.TRAIN.BASE_SIZE,
                        'crop_size': cfg.TEST.CROP_SIZE}
 
+        print(cfg.DATASET.NAME)
         train_dataset = get_segmentation_dataset(cfg.DATASET.NAME, split='train', mode='train', **data_kwargs)
         val_dataset = get_segmentation_dataset(cfg.DATASET.NAME, split='val', mode='testval', **data_kwargs_testval)
         test_dataset = get_segmentation_dataset(cfg.DATASET.NAME, split='test', mode='testval', **data_kwargs_testval)
@@ -143,6 +148,9 @@ class Trainer(object):
         epochs, max_iters, iters_per_epoch = cfg.TRAIN.EPOCHS, self.max_iters, self.iters_per_epoch
         log_per_iters, val_per_iters = self.args.log_iter, self.args.val_epoch * self.iters_per_epoch
 
+        epoches_to_keep = [it*20 for it in range(int(epochs/20)) if it >0]
+        print("Epoches to keep: ", epoches_to_keep)
+
         start_time = time.time()
         logging.info('Start training, Total Epochs: {:d} = Total Iterations {:d}'.format(epochs, max_iters))
 
@@ -152,11 +160,25 @@ class Trainer(object):
             epoch = iteration // iters_per_epoch + 1
             iteration += 1
 
+            ###################  Debug  #######################
+            # vals = np.unique(targets[0].squeeze(0).cpu().data.numpy())
+            ###################################################
+
             images = images.to(self.device)
             targets = targets.to(self.device)
 
             outputs = self.model(images)
+
+            ###################  Debug  #######################
+            # vals_out = np.unique(torch.argmax(outputs[0], 1).squeeze(0).cpu().data.numpy())
+            ###################################################
+
             loss_dict = self.criterion(outputs, targets)
+
+            ###################  Debug  #######################
+            vals_dict = loss_dict["loss"].squeeze(0).cpu().data.numpy()
+            ###################################################.
+
             losses = sum(loss for loss in loss_dict.values())
             # reduce losses over all GPUs for logging purposes
             loss_dict_reduced = reduce_loss_dict(loss_dict)
@@ -181,9 +203,11 @@ class Trainer(object):
                         self.optimizer.param_groups[0]['lr'], losses_reduced.item(),
                         str(datetime.timedelta(seconds=int(time.time() - start_time))),
                         eta_string))
+                wandb.log({"Epoch":epoch, "Iters":iteration % iters_per_epoch,"Lr":self.optimizer.param_groups[0]['lr'],
+                            "Loss":losses_reduced.item()})
 
             if iteration % self.iters_per_epoch == 0 and self.save_to_disk:
-                save_checkpoint(self.model, epoch, self.optimizer, self.lr_scheduler, is_best=False)
+                save_checkpoint(self.model, epoch, self.optimizer, self.lr_scheduler, is_best=False, keep=epoches_to_keep)
 
             if not self.args.skip_val and iteration % val_per_iters == 0:
                 self.validation(epoch)
@@ -218,6 +242,10 @@ class Trainer(object):
 
             self.metric.update(output, target)
             pixAcc, mIoU, category_iou = self.metric.get(return_category_iou=True)
+
+            # wandb
+            wandb.log({"Epoch":epoch, "pixAcc":pixAcc * 100, "mIoU":mIoU * 100})
+
             logging.info("[EVAL] Sample: {:d}, pixAcc: {:.3f}, mIoU: {:.3f}".format(i + 1, pixAcc * 100, mIoU * 100))
         pixAcc, mIoU = self.metric.get()
         logging.info("[EVAL END] Epoch: {:d}, pixAcc: {:.3f}, mIoU: {:.3f}".format(epoch, pixAcc * 100, mIoU * 100))
@@ -288,15 +316,36 @@ class Trainer(object):
 
 if __name__ == '__main__':
     args = parse_args()
+    
+    # args.config_file = "configs/trans10kv2/trans2seg/trans2seg_medium_sber.yaml"
+    # args.config_file = "configs/trans10kv2/trans2seg/trans2seg_medium.yaml"
+
     # get config
     cfg.update_from_file(args.config_file)
     cfg.update_from_list(args.opts)
     cfg.PHASE = 'train' if not args.test else 'test'
     cfg.ROOT_PATH = root_path
+    # cfg.TRAIN.MODEL_SAVE_DIR = "workdirs/translab_bs4"
     cfg.check_and_freeze()
 
     # setup python train environment, logger, seed..
     default_setup(args)
+
+    #############################################################
+
+    wandb.config = cfg
+    f = open("run_num.log", "r+")
+    run_num = int(f.read())
+    f.close()
+
+    f = open("run_num.log", "w")
+    f.write(str(run_num+1))
+    f.close()
+    run_name = str(run_num)
+
+    wandb.init(project="Trans2Seg", name=run_name)
+
+    #############################################################
 
     # create a trainer and start train
     trainer = Trainer(args)
