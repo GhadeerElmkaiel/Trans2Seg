@@ -52,7 +52,7 @@ def demo():
         os.makedirs(output_dir+"/Orig_confidence")
         os.makedirs(output_dir+"/Flipped_confidence")
 
-
+    # pathes for different images
     confidence_flipped_dir=output_dir+"/Flipped_confidence"
     confidence_output_dir=output_dir+"/Orig_confidence"
     flipped_dir=output_dir+"/Flipped"
@@ -84,10 +84,10 @@ def demo():
     print("Dataset Name: ", cfg.DATASET.NAME)
     for img_path in img_paths:
         image = Image.open(img_path).convert('RGB')
+
         # getting the flipped image 
         flipped_image = Image.open(img_path).convert('RGB')
         size_ = image.size
-
         flipped_image = flipped_image.transpose(method = Image.FLIP_LEFT_RIGHT)
         flipped_image = flipped_image.resize((cfg.TRAIN.BASE_SIZE, cfg.TRAIN.BASE_SIZE), Image.BILINEAR)
         flipped_image = transform(flipped_image).unsqueeze(0).to(args.device)
@@ -136,12 +136,17 @@ def demo():
         cropping_confidence = [conf_img, conf_img_f]
         # mask_f.save(os.path.join(flipped_dir, outname))
 
+        # the result of the merged images
         merged_result = getMergedSemanticFromCrops(cropping_results, cropping_confidence, cropping_edges, "And", [size_[1], size_[0]])
         merged_result.save(os.path.join(merged_dir, outname))
 
 
-
+# function merging images
 def getMergedSemanticFromCrops(crops_result, crops_confidence, crops_edges, function, full_size):
+    '''
+    function for merging the results from two or more images
+    '''
+    
     palette_mirror = 0
     palette_glass = 1
     palette_OOS = 3

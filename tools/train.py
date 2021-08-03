@@ -60,6 +60,7 @@ class Trainer(object):
                        'crop_size': cfg.TEST.CROP_SIZE}
 
         print(cfg.DATASET.NAME)
+        # defining the datasets
         train_dataset = get_segmentation_dataset(cfg.DATASET.NAME, split='train', mode='train', **data_kwargs)
         val_dataset = get_segmentation_dataset(cfg.DATASET.NAME, split='val', mode='testval', **data_kwargs_testval)
         test_dataset = get_segmentation_dataset(cfg.DATASET.NAME, split='test', mode='testval', **data_kwargs_testval)
@@ -78,6 +79,7 @@ class Trainer(object):
         test_sampler = make_data_sampler(test_dataset, False, args.distributed)
         test_batch_sampler = make_batch_data_sampler(test_sampler, cfg.TEST.BATCH_SIZE, drop_last=False)
 
+        # defining the dataloaders
         self.train_loader = data.DataLoader(dataset=train_dataset,
                                             batch_sampler=train_batch_sampler,
                                             num_workers=cfg.DATASET.WORKERS,
@@ -143,6 +145,7 @@ class Trainer(object):
         # evaluation metrics
         self.metric = SegmentationMetric(train_dataset.num_class, args.distributed)
 
+    # the train function
     def train(self):
         self.save_to_disk = get_rank() == 0
         epochs, max_iters, iters_per_epoch = cfg.TRAIN.EPOCHS, self.max_iters, self.iters_per_epoch
@@ -154,6 +157,7 @@ class Trainer(object):
         start_time = time.time()
         logging.info('Start training, Total Epochs: {:d} = Total Iterations {:d}'.format(epochs, max_iters))
 
+        # to start the training of the model
         self.model.train()
         iteration = self.start_epoch * iters_per_epoch if self.start_epoch > 0 else 0
         for (images, targets, _) in self.train_loader:
@@ -167,12 +171,14 @@ class Trainer(object):
             images = images.to(self.device)
             targets = targets.to(self.device)
 
+            # getting the results of the model
             outputs = self.model(images)
 
             ###################  Debug  #######################
             # vals_out = np.unique(torch.argmax(outputs[0], 1).squeeze(0).cpu().data.numpy())
             ###################################################
 
+            # calculating the loss 
             loss_dict = self.criterion(outputs, targets)
 
             ###################  Debug  #######################
@@ -219,6 +225,7 @@ class Trainer(object):
         logging.info("Total training time: {} ({:.4f}s / it)".format(total_training_str,
                                                                      total_training_time / max_iters))
 
+    # function for validation process
     def validation(self, epoch):
         self.metric.reset()
         if self.args.distributed:
@@ -251,6 +258,7 @@ class Trainer(object):
         logging.info("[EVAL END] Epoch: {:d}, pixAcc: {:.3f}, mIoU: {:.3f}".format(epoch, pixAcc * 100, mIoU * 100))
         synchronize()
 
+    # function for the test
     def test(self, vis=False):
         self.metric.reset()
         if self.args.distributed:
