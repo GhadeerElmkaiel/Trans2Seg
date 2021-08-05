@@ -17,6 +17,12 @@ This repository contains the data and code for "Trans2Seg: Transparent Object Se
 ```
 python setup.py develop --user
 ```
+## Additionl for Sber
+After the installation a ```run_num.log``` should be created with a number inside it (for example 87), this number is used to name the log file on **wandb**  
+also wandb should be installed:  
+```
+pip install wandb
+``` 
 
 ## Data Preparation
 1. create dirs './datasets/transparent/Trans10K_v2' 

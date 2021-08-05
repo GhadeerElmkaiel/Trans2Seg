@@ -1,3 +1,9 @@
+# Additionl for Sber
+After the installation a ```run_num.log``` should be created with a number inside it (for example 87), this number is used to name the log file on **wandb**  
+also wandb should be installed:  
+```
+pip install wandb
+``` 
 # Train on our dataset.
 To train on our dataset **Sber2400 Dataset** it is necessary to create a dataset loader for this dataset in ```segmentron/data/dataloader/```
 ```bash
